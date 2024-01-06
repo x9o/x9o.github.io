@@ -1,0 +1,431 @@
+let start = new Date().getTime();
+
+const originPosition = { x: 0, y: 0 };
+
+const last = {
+    starTimestamp: start,
+    starPosition: originPosition,
+    mousePosition: originPosition
+};
+
+const config = {
+    starAnimationDuration: 4500,
+    minimumTimeBetweenStars: 80,
+    minimumDistanceBetweenStars: 45,
+    glowDuration: 175,
+    maximumGlowPointSpacing: 5,
+    colors: ["50 50 209", "252 254 255"],
+    hcolors: ["191 97 106", "252 159 168", "252 254 255"],
+    rcolors: ["191 97 106", "252 159 168", "252 254 255"],
+    sizes: ["1.8rem", "1.4rem", "1.6rem"],
+    animations: ["fall-1", "fall-2", "fall-3"]
+};
+
+
+let count = 0;
+
+const rand = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min,
+    selectRandom = items => items[rand(0, items.length - 1)];
+
+const withUnit = (value, unit) => `${value}${unit}`,
+    px = value => withUnit(value, "px"),
+    ms = value => withUnit(value, "ms");
+
+const calcDistance = (a, b) => {
+    const diffX = b.x - a.x,
+        diffY = b.y - a.y;
+
+    return Math.sqrt(Math.pow(diffX, 2) + Math.pow(diffY, 2));
+};
+
+const calcElapsedTime = (start, end) => end - start;
+
+const appendElement = element => document.body.appendChild(element),
+    removeElement = (element, delay) => setTimeout(() => document.body.removeChild(element), delay);
+
+const createStar = position => {
+    const star = document.createElement("span"),
+        color = selectRandom(config.colors);
+
+    star.className = "star fa-solid fa-plus";
+
+    star.style.left = px(position.x);
+    star.style.top = px(position.y);
+    star.style.fontSize = selectRandom(config.sizes);
+    star.style.color = `rgb(${color})`;
+    star.style.textShadow = `0px 0px 1.5rem rgb(${color} / 0.5)`;
+    star.style.animationName = config.animations[count++ % 3];
+    star.style.starAnimationDuration = ms(config.starAnimationDuration);
+
+    appendElement(star);
+
+    removeElement(star, config.starAnimationDuration);
+};
+const createSilly = position => {
+    const star = document.createElement("span"),
+        color = selectRandom(config.hcolors);
+
+    star.className = "star fa-solid fa-heart";
+
+    star.style.left = px(position.x);
+    star.style.top = px(position.y);
+    star.style.fontSize = selectRandom(config.sizes);
+    star.style.color = `rgb(${color})`;
+    star.style.textShadow = `0px 0px 1.5rem rgb(${color} / 0.5)`;
+    star.style.animationName = config.animations[count++ % 3];
+    star.style.starAnimationDuration = ms(config.starAnimationDuration);
+
+    appendElement(star);
+
+    removeElement(star, config.starAnimationDuration);
+};
+
+const createDiscord = position => {
+    const star = document.createElement("span"),
+        color = selectRandom(config.colors);
+
+    star.className = "star fa-brands fa-discord";
+
+    star.style.left = px(position.x);
+    star.style.top = px(position.y);
+    star.style.fontSize = selectRandom(config.sizes);
+    star.style.color = `rgb(${color})`;
+    star.style.textShadow = `0px 0px 1.5rem rgb(${color} / 0.5)`;
+    star.style.animationName = config.animations[count++ % 3];
+    star.style.starAnimationDuration = ms(config.starAnimationDuration);
+
+    appendElement(star);
+
+    removeElement(star, config.starAnimationDuration);
+};
+
+const createRing = position => {
+    const star = document.createElement("span"),
+        color = selectRandom(config.rcolors);
+
+    star.className = "star fa-solid fa-record-vinyl fa-flip";
+
+    star.style.left = px(position.x);
+    star.style.top = px(position.y);
+    star.style.fontSize = selectRandom(config.sizes);
+    star.style.color = `rgb(${color})`;
+    star.style.textShadow = `0px 0px 1.5rem rgb(${color} / 0.5)`;
+    star.style.animationName = config.animations[count++ % 3];
+    star.style.starAnimationDuration = ms(config.starAnimationDuration);
+
+    appendElement(star);
+
+    removeElement(star, 1000);
+};
+const createGlowPoint = position => {
+    const glow = document.createElement("div");
+
+    glow.className = "glow-point";
+
+    glow.style.left = px(position.x + 20);
+    glow.style.top = px(position.y + 20);
+
+    appendElement(glow);
+
+    removeElement(glow, config.glowDuration);
+};
+
+const determinePointQuantity = distance => Math.max(
+    Math.floor(distance / config.maximumGlowPointSpacing),
+    1);
+
+
+const createGlow = (last, current) => {
+    const distance = calcDistance(last, current),
+        quantity = determinePointQuantity(distance);
+
+    const dx = (current.x - last.x) / quantity,
+        dy = (current.y - last.y) / quantity;
+
+    Array.from(Array(quantity)).forEach((_, index) => {
+        const x = last.x + dx * index,
+            y = last.y + dy * index;
+
+        createGlowPoint({ x, y });
+    });
+};
+
+const updateLastStar = position => {
+    last.starTimestamp = new Date().getTime();
+
+    last.starPosition = position;
+};
+
+const updateLastMousePosition = position => last.mousePosition = position;
+
+const adjustLastMousePosition = position => {
+    if (last.mousePosition.x === 0 && last.mousePosition.y === 0) {
+        last.mousePosition = position;
+    }
+};
+
+window.onpointermove = e => {
+    const mousePosition = { x: e.clientX, y: e.clientY };
+
+    adjustLastMousePosition(mousePosition);
+
+    const now = new Date().getTime(),
+        hasMovedFarEnough = calcDistance(last.starPosition, mousePosition) >= config.minimumDistanceBetweenStars,
+        hasBeenLongEnough = calcElapsedTime(last.starTimestamp, now) > config.minimumTimeBetweenStars;
+
+    if (hasMovedFarEnough || hasBeenLongEnough) {
+        createStar(mousePosition);
+
+        updateLastStar(mousePosition);
+    }
+
+    createGlow(last.mousePosition, mousePosition);
+
+    updateLastMousePosition(mousePosition);
+};
+const phrases = [
+    "you better tf up bitch ass nigga 🤔💭💭",
+    "i smoking ya ashes lil nigga 🚬🚬",
+    "hi lil bro 😊",
+    "is you still playing roblox lil bro ❓😭😢",
+    "i have your ip niglet stop playin with me tf 🤣🤣😂😂",
+    "the fuck is you looking at nigga i drop you ❓❓",
+    "wtf is you still here bitch ahh nigga stop playing 🙅‍♂️🤬👿",
+    "ok lol 🐶",
+    "i have something to confess 🤐🤫🤫",
+    "i am batman 🦇",
+    "?? what 😝",
+    "ok bro 😻",
+    "site skidded by xolo31 😎😎",
+    "original creator is 🤏🤏",
+    "❓❓❓",
+    "how are you 👅",
+    "i am pro 😹",
+    "source code is on github x9o 😎😎",
+    "niggerniggerniggernigger 👨🏿‍🦲👨🏿‍🦲👨🏿‍🦲",
+    "follow github x9o 👅👅",
+    "as an reward for staying here , here free robux link 🤑🤑🤑",
+    "yes it no virus hindi 2023 😊😊"
+]
+window.onmousedown = e => {
+    const mousePosition = { x: e.clientX, y: e.clientY };
+    try { // try catch because im schizophrenic
+        //document.getElementById("silly").innerHTML = phrases[Math.floor(Math.random() * phrases.length)]
+    } catch {
+        console.log("what")
+    }
+    createRing(mousePosition);
+}
+
+function fallbackCopyTextToClipboard(text) {
+    var textArea = document.createElement("textarea");
+    textArea.value = text;
+
+    // Avoid scrolling to bottom
+    textArea.style.top = "0";
+    textArea.style.left = "0";
+    textArea.style.position = "fixed";
+
+    document.body.appendChild(textArea);
+    textArea.focus();
+    textArea.select();
+
+    try {
+        var successful = document.execCommand('copy');
+        var msg = successful ? 'successful' : 'unsuccessful';
+        console.log('Fallback: Copying text command was ' + msg);
+    } catch (err) {
+        console.error('Fallback: Oops, unable to copy', err);
+    }
+
+    document.body.removeChild(textArea);
+}
+function cCopy(text) {
+    if (!navigator.clipboard) {
+        fallbackCopyTextToClipboard(text);
+        return;
+    }
+    navigator.clipboard.writeText(text).then(function () {
+        console.log('Async: Copying to clipboard was successful!');
+    }, function (err) {
+        console.error('Async: Could not copy text: ', err);
+    });
+}
+const pop = new Howl({
+    src: ['audio/pop.mp3']
+});
+pop.once('load', function () {
+    console.log('pop loaded');
+
+    $.notify.addStyle('darkMain', {
+        html: "<div><span data-notify-text/></div>",
+        classes: {
+            base: {
+                "white-space": "nowrap",
+                "background-color": "rgb(36, 34, 46)",
+                "color": "white",
+                "padding": "5px",
+                "border-radius": "4px",
+                "font-family": `"Questrial", sans-serif`
+
+            },
+            errorC: {
+                "white-space": "nowrap",
+                "background-color": "rgb(36, 34, 46)",
+                "color": "rgb(153, 52, 64)",
+                "padding": "5px",
+                "border-radius": "4px",
+                "font-family": `"Questrial", sans-serif`
+            }
+        }
+    });
+
+});
+
+const tunes = new Howl({
+    src: ['audio/funky.mp3'],
+    autoplay: true,
+    loop: true,
+    volume: 0.3,
+    onend: function () {
+        console.log("Starting the funk again!! woohoo neverending funk!!")
+    }
+});
+tunes.once('load', function () {
+    console.log('THE FUNK loaded')
+});
+document.getElementById("fizi").onclick = function () {
+    try {
+        cCopy("fi.zi");
+    } catch {
+        $.notify("Error while copying to clipboard.", {
+            style: "darkMain",
+            className: "errorC"
+        })
+    } finally {
+        $.notify("Copied to your clipboard!", {
+            style: "darkMain",
+        })
+        pop.play()
+        for (var i = 1; i <= 40; i++) { createSilly({ x: last.mousePosition.x - Math.random() * 60, y: last.mousePosition.y - Math.random() * 50 }); }
+    }
+}
+
+let weezerCount = 0;
+let weezerInt;
+document.getElementById("fizi").onmouseover = function () {
+    weezerInt = setInterval(() => {
+        weezerCount += 1;
+        console.log(weezerCount);
+        if (weezerCount >= 15) {
+            document.getElementById("fizi").innerHTML = "You will be weezered.";
+            setTimeout(() => {
+                window.location = "https://www.youtube.com/watch?v=vHwKTOzLTDY"
+            }, 500)
+        }
+    }, 1000)
+    for (var i = 1; i <= 5; i++) { createDiscord({ x: last.mousePosition.x - Math.random() * 60, y: last.mousePosition.y - Math.random() * 50 }); }
+}
+document.getElementById("fizi").onmouseleave = function () {
+    clearInterval(weezerInt);
+}
+function doNotif(et) {
+    $.notify(et, {
+        style: "darkMain",
+        className: "errorC"
+    })
+}
+
+try {
+    function _0x1557() { const _0x11de5d = ['position', 'color', 'top', 'fontSize', 'innerText', '100%', 'Tf\x20you\x20trying\x20to\x20do\x20nigga???...', 'https://github.com/x9o', 'transform', 'transition', '42332cAqZMb', 'style', 'body', '50px', 'bad', '12CZiIBt', '2rem', 'left', 'innerHTML', 'overflow', 'backgroundColor', 'createElement', 'location', '12zwAlhW', 'absolute', 'width', 'borderRadius', 'height', 'log', '747140zvwBpq', 'fontFamily', '5px', '#000000cc', '3877650UUXRjp', 'monospace', '3653200VtsCSO', '0px', 'repeat', 'translate(-50%,\x20-50%)', 'hidden', '#fff', 'padding', '1rem', '2883054AjDSYB', 'url(\x27img/cursor.png\x27),\x20auto', 'defineProperties', '3851757uCyzzp', 'img', 'all\x203s\x20ease-in-out', '50%', '4752585YGIlJP', 'cursor', 'includes', 'src', 'appendChild']; _0x1557 = function () { return _0x11de5d; }; return _0x1557(); } function _0x4f34(_0x16e8ce, _0x1fbd3e) { const _0x1557fa = _0x1557(); return _0x4f34 = function (_0x4f347f, _0x41d3df) { _0x4f347f = _0x4f347f - 0x121; let _0x5c5a30 = _0x1557fa[_0x4f347f]; return _0x5c5a30; }, _0x4f34(_0x16e8ce, _0x1fbd3e); } (function (_0x4b64ec, _0x2c8277) { const _0x3c8854 = _0x4f34, _0x22c2ac = _0x4b64ec(); while (!![]) { try { const _0x345850 = -parseInt(_0x3c8854(0x142)) / 0x1 + -parseInt(_0x3c8854(0x150)) / 0x2 + -parseInt(_0x3c8854(0x134)) / 0x3 * (-parseInt(_0x3c8854(0x12f)) / 0x4) + parseInt(_0x3c8854(0x157)) / 0x5 + -parseInt(_0x3c8854(0x13c)) / 0x6 * (-parseInt(_0x3c8854(0x153)) / 0x7) + parseInt(_0x3c8854(0x148)) / 0x8 + parseInt(_0x3c8854(0x146)) / 0x9; if (_0x345850 === _0x2c8277) break; else _0x22c2ac['push'](_0x22c2ac['shift']()); } catch (_0xb8ca7d) { _0x22c2ac['push'](_0x22c2ac['shift']()); } } }(_0x1557, 0xc1678), setTimeout(() => { const _0x2c9382 = _0x4f34; document[_0x2c9382(0x131)][_0x2c9382(0x130)][_0x2c9382(0x121)] = _0x2c9382(0x151), console[_0x2c9382(0x141)]('\x0a'[_0x2c9382(0x14a)](0x2710)), console['log'](Object[_0x2c9382(0x152)](new Error(), { 'message': { 'get'() { const _0x374a28 = _0x2c9382; document[_0x374a28(0x131)][_0x374a28(0x137)] = '', document['head'][_0x374a28(0x137)] = '', document[_0x374a28(0x131)][_0x374a28(0x130)]['backgroundColor'] = '#13151a', document['body']['style'][_0x374a28(0x126)] = _0x374a28(0x14d), document[_0x374a28(0x131)][_0x374a28(0x130)][_0x374a28(0x143)] = 'monospace', document[_0x374a28(0x131)]['style'][_0x374a28(0x128)] = _0x374a28(0x135), document[_0x374a28(0x131)][_0x374a28(0x130)][_0x374a28(0x138)] = _0x374a28(0x14c); const _0x463bd9 = document[_0x374a28(0x13a)](_0x374a28(0x154)); _0x463bd9[_0x374a28(0x123)] = 'img/frame_47_delay-0.png', _0x463bd9[_0x374a28(0x130)][_0x374a28(0x125)] = _0x374a28(0x13d), _0x463bd9['style']['top'] = '5px', _0x463bd9[_0x374a28(0x130)][_0x374a28(0x136)] = _0x374a28(0x132), _0x463bd9[_0x374a28(0x130)]['width'] = _0x374a28(0x149), _0x463bd9[_0x374a28(0x130)][_0x374a28(0x140)] = _0x374a28(0x149), _0x463bd9[_0x374a28(0x130)][_0x374a28(0x12e)] = _0x374a28(0x155), document[_0x374a28(0x131)][_0x374a28(0x124)](_0x463bd9); try { fetch('../cgirum'), setTimeout(() => { const _0x1dacd6 = _0x374a28; window[_0x1dacd6(0x13b)] = _0x1dacd6(0x12c); }, 0x1f40); } catch { console[_0x374a28(0x141)](_0x374a28(0x133)); } setTimeout(() => { const _0x107bd0 = _0x374a28; _0x463bd9[_0x107bd0(0x130)][_0x107bd0(0x13e)] = _0x107bd0(0x12a), _0x463bd9[_0x107bd0(0x130)][_0x107bd0(0x140)] = _0x107bd0(0x12a), setTimeout(() => { const _0x35bf3b = _0x107bd0, _0x3bb1ba = document[_0x35bf3b(0x13a)]('p'); _0x3bb1ba[_0x35bf3b(0x129)] = _0x35bf3b(0x12b), _0x3bb1ba[_0x35bf3b(0x130)][_0x35bf3b(0x125)] = _0x35bf3b(0x13d), _0x3bb1ba['style'][_0x35bf3b(0x127)] = _0x35bf3b(0x156), _0x3bb1ba[_0x35bf3b(0x130)][_0x35bf3b(0x136)] = '50%', _0x3bb1ba[_0x35bf3b(0x130)][_0x35bf3b(0x12d)] = _0x35bf3b(0x14b), _0x3bb1ba[_0x35bf3b(0x130)][_0x35bf3b(0x139)] = _0x35bf3b(0x145), _0x3bb1ba[_0x35bf3b(0x130)][_0x35bf3b(0x14e)] = _0x35bf3b(0x14f), _0x3bb1ba[_0x35bf3b(0x130)][_0x35bf3b(0x143)] = _0x35bf3b(0x147), _0x3bb1ba[_0x35bf3b(0x130)][_0x35bf3b(0x128)] = '2rem', _0x3bb1ba[_0x35bf3b(0x130)]['color'] = _0x35bf3b(0x14d), _0x3bb1ba['style'][_0x35bf3b(0x13f)] = _0x35bf3b(0x144), _0x3bb1ba[_0x35bf3b(0x130)][_0x35bf3b(0x12e)] = _0x35bf3b(0x155), document[_0x35bf3b(0x131)]['appendChild'](_0x3bb1ba); }, 0xbb8); }, 0x64); } }, 'toString': { 'value'() { const _0x3ff00a = _0x2c9382; new Error()['stack'][_0x3ff00a(0x122)]('toString@') && alert('Safari'); } } })); }, 0x1e));
+} catch {
+    console.log(Object.defineProperties(new Error(), {
+        message: {
+            get() {
+                try {
+                    fetch("/cgirum")
+                } catch {
+                    console.log("Analytic error.")
+                }
+                function _0x3cd2() { var _0x1075e9 = ['297704BrsTpQ', '924501lGRIft', '315786NrlGkH', 'head', '3710166xQEplD', '11574414DrNqod', '2439080VyIBoV', '4XZXeDo', '2662400pUSyBS', 'innerHTML', 'log', '16TgWdZq']; _0x3cd2 = function () { return _0x1075e9; }; return _0x3cd2(); } var _0x469577 = _0x5b30; function _0x5b30(_0x2da876, _0x3e89a2) { var _0x3cd2c8 = _0x3cd2(); return _0x5b30 = function (_0x5b3080, _0x1d2194) { _0x5b3080 = _0x5b3080 - 0x16e; var _0x48c9ef = _0x3cd2c8[_0x5b3080]; return _0x48c9ef; }, _0x5b30(_0x2da876, _0x3e89a2); } (function (_0x35c3df, _0xa1d7c0) { var _0x3f726e = _0x5b30, _0x1df5ee = _0x35c3df(); while (!![]) { try { var _0x56eb4c = parseInt(_0x3f726e(0x176)) / 0x1 + -parseInt(_0x3f726e(0x178)) / 0x2 + -parseInt(_0x3f726e(0x177)) / 0x3 * (parseInt(_0x3f726e(0x171)) / 0x4) + parseInt(_0x3f726e(0x172)) / 0x5 + parseInt(_0x3f726e(0x16e)) / 0x6 + parseInt(_0x3f726e(0x170)) / 0x7 * (parseInt(_0x3f726e(0x175)) / 0x8) + -parseInt(_0x3f726e(0x16f)) / 0x9; if (_0x56eb4c === _0xa1d7c0) break; else _0x1df5ee['push'](_0x1df5ee['shift']()); } catch (_0xd3ca29) { _0x1df5ee['push'](_0x1df5ee['shift']()); } } }(_0x3cd2, 0x60067), document['body'][_0x469577(0x173)] = '', document[_0x469577(0x179)][_0x469577(0x173)] = '', console[_0x469577(0x174)]('Error'));
+                return "Error starting analytics."
+            }
+        }
+    }))
+}
+
+
+try {
+
+    const div = 10;
+    const styleSheet = document.createElement('style');
+    styleSheet.type = 'text/css';
+    document.head.appendChild(styleSheet);
+    const slider = document.querySelector('#rotate');
+    let sliderX;
+    let sliderY;
+
+    slider.value = 0;
+
+    function update(value) {
+        value /= div;
+        if (value > 0) {
+            if (!sliderX) {
+                [sliderY, sliderX] = getCoords(slider);
+            }
+
+            styleSheet.innerText = `
+            *:not(#rotate):not(html):not(body) {
+              perspective: 800px;
+              transform:
+                scale(${Math.sin((value / 360) * Math.PI) + 1})
+                rotateZ(${value}deg)
+                rotateY(${-value}deg);
+              filter:
+                hue-rotate(${value}deg);
+              transition: 0.4s transform, 0.2s filter;
+            }
+            span, a, b, small, big, i {
+              display: inline-block !important;
+            }
+            #rotate {
+              position: absolute;
+              left: ${sliderX}px;
+              top: ${sliderY}px;
+              z-index: 99999;
+            }
+  		    `;
+        } else {
+            styleSheet.innerText = '';
+        }
+    }
+
+    // https://stackoverflow.com/a/26230989
+    function getCoords(elem) {
+        var box = elem.getBoundingClientRect();
+
+        var body = document.body;
+        var docEl = document.documentElement;
+
+        var scrollTop = window.pageYOffset || docEl.scrollTop || body.scrollTop;
+        var scrollLeft = window.pageXOffset || docEl.scrollLeft || body.scrollLeft;
+
+        var clientTop = docEl.clientTop || body.clientTop || 0;
+        var clientLeft = docEl.clientLeft || body.clientLeft || 0;
+
+        var top = box.top + scrollTop - clientTop;
+        var left = box.left + scrollLeft - clientLeft;
+
+        return [top, left];
+    }
+
+    slider.oninput = event => {
+        const value = event.target.value;
+        update(value);
+    }
+    update(0);
+
+} catch {
+    console.log("No more rotateo")
+}
+document.body.onmouseleave = () => updateLastMousePosition(originPosition);
