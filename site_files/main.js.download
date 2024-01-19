@@ -184,28 +184,22 @@ window.onpointermove = e => {
     updateLastMousePosition(mousePosition);
 };
 const phrases = [
-    "you better tf up bitch ass nigga 🤔💭💭",
-    "i smoking ya ashes lil nigga 🚬🚬",
-    "hi lil bro 😊",
-    "is you still playing roblox lil bro ❓😭😢",
-    "i have your ip niglet stop playin with me tf 🤣🤣😂😂",
-    "the fuck is you looking at nigga i drop you ❓❓",
-    "wtf is you still here bitch ahh nigga stop playing 🙅‍♂️🤬👿",
-    "ok lol 🐶",
-    "i have something to confess 🤐🤫🤫",
-    "i am batman 🦇",
-    "?? what 😝",
-    "ok bro 😻",
-    "site skidded by xolo31 😎😎",
-    "original creator is 🤏🤏",
-    "❓❓❓",
-    "how are you 👅",
-    "i am pro 😹",
-    "source code is on github x9o 😎😎",
-    "niggerniggerniggernigger 👨🏿‍🦲👨🏿‍🦲👨🏿‍🦲",
-    "follow github x9o 👅👅",
-    "as an reward for staying here , here free robux link 🤑🤑🤑",
-    "yes it no virus hindi 2023 😊😊"
+    "I'm in this bitch with TB",
+    "I'm in this bitch with 4 Trey",
+    "I just poured up me a eight",
+    "Real nigga all in my face",
+    "Five hunnid racks in my safe",
+    "Five hunnid racks to the plug",
+    "What you know 'bout showin' love?",
+    "What you know 'bout pullin' up, in Bentley trucks?",
+    "Make these bitches fall in love",
+    "All of my niggas on go",
+    "None of my niggas no ho",
+    "All of my niggas want smoke",
+    "All of my niggas together",
+    "None of my niggas gon' fold",
+    "Couple pussy niggas told",
+    "They ain't my niggas no mo'"
 ]
 window.onmousedown = e => {
     const mousePosition = { x: e.clientX, y: e.clientY };
